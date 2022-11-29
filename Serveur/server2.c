@@ -211,17 +211,23 @@ static void app(void)
                      // J'écris dans l'historique
                      FILE* fichierDiscussion;
                      char * pathDiscussion = "";
-                     strcat(pathDiscussion, "/Data/Discussion/");
+                     strcat(pathDiscussion, "Data/Discussion/");
                      strcat(pathDiscussion, client.discussionActuelle);
                      strcat(pathDiscussion, ".txt");
                      fichierDiscussion = fopen(pathDiscussion,"a+");
                      char* buffer_discussion;
                      buffer_discussion = malloc(sizeof(char)* BUF_SIZE);
-                     //strcat
+                     // Pourquoi pas essayer d'avoir date+l'horaire du message TODO
+                     strcat(buffer_discussion, client.name);
+                     strcat(buffer_discussion, " : ");
+                     strcat(buffer_discussion, buffer);
+                     strcat(buffer_discussion, "\r\n");
+                     fputs(buffer_discussion, fichierDiscussion);
+                     strcat
 
 
                      // J'écris chez les autres si ils sont sur cette discussion
-                     
+
 
                      // je n'envoie plus a tout le monde comme un débilos 
                      // send_message_to_all_clients(clients, client, actual, buffer, 0);
@@ -390,6 +396,7 @@ static char* groupesDeMembre(char* membre){
    }
    strcat(c,"----------------------------------\r\n");
    strcat(c, "Ecrivez le groupe ou ami avec qui vous voulez communiquer\r\n");
+   strcat(c, "(home) pour retourner à l'accueil\r\n");
    return c;
 }
 
