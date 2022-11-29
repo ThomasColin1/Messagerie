@@ -200,11 +200,7 @@ static void app(void)
                else
                {
                   if(strcmp(buffer,"list")==0){
-                     int i;
-                     for(i=0;i<2;i++){
-                        // write_client(client.sock, LISTE_DE_GROUPES[i]);
-                        // write_client(client.sock, "\n");
-                     }
+                     
                   }else if(strcmp(buffer,"create")==0){
                      
                   }

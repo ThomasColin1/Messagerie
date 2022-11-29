@@ -75,8 +75,9 @@ static void app(const char *address, const char *name)
             }
          }
          
-         if(strcmp(buffer, "home")){
+         if(strcmp(buffer, "home")==0){
             home=0;
+            printf("HOME\r\n");
          }
          else{
             write_server(sock, buffer);
