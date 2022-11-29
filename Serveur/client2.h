@@ -7,7 +7,7 @@ typedef struct
 {
    SOCKET sock;
    char name[BUF_SIZE];
-   char discussionActuelle[BUF_SIZE];
+   char* discussionActuelle;
 }Client;
 
 #endif /* guard */

@@ -169,9 +169,11 @@ static void app(void)
 
          Client c = { csock };
          strncpy(c.name, buffer, BUF_SIZE - 1);
+         c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
          clients[actual] = c;
          actual++;
          printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+         
       }
       else
       {
@@ -183,8 +185,10 @@ static void app(void)
             {
                Client client = clients[i];
                int c = read_client(clients[i].sock, buffer);
-               printf("c:%i\r\n", c);
-               printf("bufferSUPER:%s\r\n", buffer);
+               //printf("c:%i\r\n", c);
+               //printf("bufferSUPER:%s\r\n", buffer);
+
+
                /* client disconnected */
                if(strcmp(buffer, "quit") == 0)
                {
@@ -194,25 +198,39 @@ static void app(void)
                   strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
                   send_message_to_all_clients(clients, client, actual, buffer, 1);
                }
-               else
+               // Etape du choix de groupe
+               // On mets "|choix-de-groupe|" dans discussionActuelle pour signifier que le client est en train de choisir le groupe de discussion
+               else if(strcmp(client.discussionActuelle,"|choix-de-groupe|")==0){
+                  if(chercheGroupeParNom(buffer)!=NULL){
+                     strncpy(client.discussionActuelle,buffer, BUF_SIZE-1);
+
+                     char* message = malloc(sizeof(char)*BUF_SIZE);
+                     strncpy(message,"Groupe choisi : ",BUF_SIZE);
+                     strcat(message,client.discussionActuelle);
+                     strcat(message,".\r\n");
+
+                     write_client(client.sock, message);
+                     free(message);
+                  }else{
+                     write_client(client.sock, "Groupe non existant, veuillez entrer à nouveau le groupe choisi\r\n");
+                  }
+               }
+               else 
                {
                   if(strcmp(buffer,"list")==0){
-
                      write_client(client.sock, groupesDeMembre(client.name));
-
+                     strncpy(client.discussionActuelle,"|choix-de-groupe|", BUF_SIZE-1);
                   }else if(strcmp(buffer,"create")==0){
                      
-                  }
-                  
-                  
-                  else{
-                     
+                  }else{
                   send_message_to_all_clients(clients, client, actual, buffer, 0);
                   printf("Message de %s à tt le monde\n", client.name);
                   }
                
                }
                break;
+
+
             }
          }
       }
@@ -373,6 +391,16 @@ static bool estMembre(char* membre, groupe* grp){
       }
    }
    return false;
+}
+
+static groupe* chercheGroupeParNom(char* nomGroupe){
+   int i;
+   for(i=0; i<compteurGroupes; i++){
+      if(strcmp(LISTE_DE_GROUPES[i]->nom,nomGroupe)==0){
+         return LISTE_DE_GROUPES[i];
+      }
+   }
+   return NULL;
 }
 
 int main(int argc, char **argv)
