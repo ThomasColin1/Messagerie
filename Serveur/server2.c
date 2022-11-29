@@ -141,11 +141,36 @@ static void app(void)
                      strncpy(client.discussionActuelle,buffer, BUF_SIZE-1);
 
                      char* message = malloc(sizeof(char)*BUF_SIZE);
-                     strncpy(message,"Groupe choisi : ",BUF_SIZE);
+                     strncpy(message,"Discussion choisie : ",BUF_SIZE);
                      strcat(message,client.discussionActuelle);
                      strcat(message,".\r\n");
+                     strcat(message, "(home) pour retourner à l'accueil\r\n");
+                     strcat(message, "(quit) pour retourner quitter la messagerie\r\n\r\n");
 
                      write_client(client.sock, message);
+
+                     // Ecriture de l'historique chez le client concerne
+                     FILE* fichierHistorique;
+                     char * pathHistorique;
+                     pathHistorique = malloc(sizeof(char)* BUF_SIZE);
+                     strcat(pathHistorique, "Data/Discussion/");
+                     strcat(pathHistorique, client.discussionActuelle);
+                     strcat(pathHistorique, ".txt");
+                     fichierHistorique = fopen(pathHistorique,"r");
+                     char* buffer_historique;
+                     buffer_historique = malloc(sizeof(char)* BUF_SIZE);
+                     char* buffer_historique_temp;
+                     buffer_historique_temp = malloc(sizeof(char)* BUF_SIZE);
+                     fgets(buffer_historique_temp, BUF_SIZE, fichierHistorique);
+                     while(!(feof(fichierHistorique))){
+                        strcat(buffer_historique, buffer_historique_temp);
+                        fgets(buffer_historique_temp, BUF_SIZE, fichierHistorique);
+                     }
+                     fgets(buffer_historique, BUF_SIZE, fichierHistorique);
+                     fclose(fichierHistorique);
+                     write_client(client.sock, buffer_historique);
+
+                     
                      free(message);
                   }else{
                      write_client(client.sock, "Groupe non existant, veuillez entrer à nouveau le groupe choisi\r\n");
@@ -195,7 +220,6 @@ static void app(void)
                      strcpy(client.discussionActuelle, "");
                   }
                   else{
-                     printf("debut écriture historique\r\n");
                      // J'écris dans l'historique
                      FILE* fichierDiscussion;
                      char * pathDiscussion;
@@ -203,7 +227,6 @@ static void app(void)
                      strcat(pathDiscussion, "Data/Discussion/");
                      strcat(pathDiscussion, client.discussionActuelle);
                      strcat(pathDiscussion, ".txt");
-                     printf("pathDiscussion|%s|\r\n", pathDiscussion);
                      fichierDiscussion = fopen(pathDiscussion,"a+");
                      char* buffer_discussion;
                      buffer_discussion = malloc(sizeof(char)* BUF_SIZE);
@@ -213,17 +236,16 @@ static void app(void)
                      strcat(buffer_discussion, " : ");
                      strcat(buffer_discussion, buffer);
                      strcat(buffer_discussion, "\r\n");
-                     printf("buffer_discussion|%s|\r\n", buffer_discussion);
                      fputs(buffer_discussion, fichierDiscussion);
-                     printf("fin écriture historique\r\n");
                      fclose(fichierDiscussion);
+                     printf("sauvegarde dans l'historique du message de %s dans le groupe %s:\r\n%s", client.name, client.discussionActuelle, buffer_discussion);
                      // J'écris chez les autres si ils sont sur cette discussion
 
 
                      // je n'envoie plus a tout le monde comme un débilos 
                      // send_message_to_all_clients(clients, client, actual, buffer, 0);
                      printf("Message recu de |%s| à destination de |%s|\n", client.name, client.discussionActuelle);
-
+                     
                      send_message_to_clients_in_group(buffer, clients, actual, client);
                      
 
