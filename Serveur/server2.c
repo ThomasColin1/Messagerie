@@ -229,14 +229,14 @@ static void app(void)
                   }
                   else{
                      // J'écris dans l'historique
-                     FILE* fichierDiscussion;
-                     char * pathDiscussion = "";
-                     strcat(pathDiscussion, "/Data/Discussion/");
-                     strcat(pathDiscussion, client.discussionActuelle);
-                     strcat(pathDiscussion, ".txt");
-                     fichierDiscussion = fopen(pathDiscussion,"a+");
-                     char* buffer_discussion;
-                     buffer_discussion = malloc(sizeof(char)* BUF_SIZE);
+                     // FILE* fichierDiscussion;
+                     // char * pathDiscussion = "";
+                     // strcat(pathDiscussion, "/Data/Discussion/");
+                     // strcat(pathDiscussion, client.discussionActuelle);
+                     // strcat(pathDiscussion, ".txt");
+                     // fichierDiscussion = fopen(pathDiscussion,"a+");
+                     // char* buffer_discussion;
+                     // buffer_discussion = malloc(sizeof(char)* BUF_SIZE);
                      //strcat
 
 
@@ -246,6 +246,10 @@ static void app(void)
                      // je n'envoie plus a tout le monde comme un débilos 
                      // send_message_to_all_clients(clients, client, actual, buffer, 0);
                      printf("Message recu de |%s| à destination de |%s|\n", client.name, client.discussionActuelle);
+
+                     send_message_to_clients_in_group(buffer, clients, actual, client);
+                     
+
                   }
                
                }
@@ -433,6 +437,25 @@ static groupe* chercheGroupeParNom(char* nomGroupe){
       }
    }
    return NULL;
+}
+
+static void send_message_to_clients_in_group(char* buffer, Client* clients, int actuel, Client client){
+   int i;
+   
+   char* message = malloc(sizeof(char)*BUF_SIZE);
+
+   strncpy(message, client.name, BUF_SIZE - 1);
+   strncat(message, " : ", BUF_SIZE - 1);
+   strncat(message, buffer, BUF_SIZE - 1);
+
+
+   for(i=0; i<actuel; i++){
+      if(strcmp(clients[i].name, client.name)!=0 && strcmp(clients[i].discussionActuelle, client.discussionActuelle)==0){
+         write_client(clients[i].sock, message);
+      }
+   }
+
+   free(message);
 }
 
 int main(int argc, char **argv)
