@@ -15,73 +15,7 @@ int compteurGroupes;
 
 static void init(void)
 {
-printf("DEBUT INIT\r\n");
-
-FILE* fichier;
-fichier = fopen("Data/list_groups.txt","r");
-
-char* buffer_group;
-buffer_group = malloc(sizeof(char)* BUF_SIZE);
-if(fichier!=NULL){
-   printf("Fichier trouvé\r\n");
-   char c;
-   compteurGroupes = 0;
-
-   int compteurMembres;
-   
-   // crée le groupe
-   c = fgetc(fichier);
-   while(c!='+'){
-
-
-      groupe* g = malloc(sizeof(groupe));
-      // retour à 0 au retour à la ligne
-      strcpy(buffer_group,"");
-      compteurMembres = 0;
-      while(c!='\n'){
-         //c = fgetc(fichier);
-         printf("%c",c);
-         if(c==':'){
-            // nom du groupe
-            printf("\n|BUFFER NOM : %s |\n",buffer_group);
-            strcpy(g->nom, buffer_group);
-            compteurGroupes++;
-            strcpy(buffer_group,"");
-            c = fgetc(fichier);
-         }
-         if(c==';'){
-            // nom de l'utilisateur a ajouter au groupe
-            g->membres[compteurMembres] = malloc(sizeof(buffer_group));
-            printf("\n|BUFFER MEMBRE : %s |\n",buffer_group);
-            strcpy(g->membres[compteurMembres],buffer_group);
-            compteurMembres++;
-            strcpy(buffer_group,"");
-         }
-         else{
-            //printf("\n|BUFFER CAT AVANT : %s |\n",buffer_group);
-            strncat(buffer_group, &c, 1);
-            //  buffer_group[strlen(buffer_group)] = c;
-            //printf("\n|BUFFER CAT APRES : %s |\n",buffer_group);
-         }
-         c = fgetc(fichier);
-      }
-      //passe le retour a la ligne normalement
-      c = fgetc(fichier);
-      g->nombreDeMembres = compteurMembres;
-      //ajoute le groupe à la liste de groupes
-      LISTE_DE_GROUPES[compteurGroupes-1] = g;
-
-      printf("| Nom Groupe fin : %s|\r\n",g->nom);
-      printf("|1°membre: %s|\r\n", g->membres[0]);
-
-      
-
-   }
-
-   afficherGroupes();
-   printf("FIN INIT\r\n");
-}
-
+loadGroups();
 #ifdef WIN32
    WSADATA wsa;
    int err = WSAStartup(MAKEWORD(2, 2), &wsa);
@@ -241,6 +175,39 @@ static void app(void)
                   }else{
                      write_client(client.sock, "Groupe non existant, veuillez entrer à nouveau le groupe choisi\r\n");
                   }
+               }else if(strcmp(client.discussionActuelle,"|creation-de-groupe|")==0 && strcmp(buffer,"home")!=0){
+                     strcpy(client.discussionActuelle,"|choix-membres|");
+                     FILE* fichierGroupes;
+                     fichierGroupes = fopen("Data/list_groups.txt","a+");
+                     fseek(fichierGroupes, SEEK_END, 1);
+                     fputs(buffer, fichierGroupes);
+                     fputs(":", fichierGroupes);
+                     fclose(fichierGroupes);
+
+               }else if(strcmp(client.discussionActuelle,"|choix-membres|")==0 && strcmp(buffer,"home")!=0){
+
+                     if(strcmp(buffer,"finish")!=0){
+                        FILE* fichierGroupes;
+                        fichierGroupes = fopen("Data/list_groups.txt","a+");
+                        fputs(buffer, fichierGroupes);
+                        fputs(";", fichierGroupes);
+                        fclose(fichierGroupes);
+                     }else{
+                        FILE* fichierGroupes;
+                        fichierGroupes = fopen("Data/list_groups.txt","a+");
+                        fputs("\n", fichierGroupes);
+                        fclose(fichierGroupes);
+                        strcpy(client.discussionActuelle,"");
+                        loadGroups();
+                     }
+                     // printf("debut écriture groupe\r\n");
+                     // FILE* fichierGroupes;
+                     // fichierGroupes = fopen("Data/list_groups/txt","a+");
+                     // fputs(buffer, fichierGroupes);
+                     // fputs(fichierGroupes);
+                     // printf("fin écriture groupe\r\n");
+                     // fclose(fichierGroupes);
+
                }
                else 
                {
@@ -248,7 +215,7 @@ static void app(void)
                      write_client(client.sock, groupesDeMembre(client.name));
                      strncpy(client.discussionActuelle,"|choix-de-groupe|", BUF_SIZE-1);
                   }else if(strcmp(buffer,"create")==0){
-                     
+                     strncpy(client.discussionActuelle, "|creation-de-groupe|", BUF_SIZE-1);
                   }else if(strcmp(buffer,"home")==0){
                      strcpy(client.discussionActuelle, "");
                   }
@@ -489,6 +456,68 @@ static void send_message_to_clients_in_group(char* buffer, Client* clients, int 
    }
 
    free(message);
+}
+
+
+static void loadGroups(){
+   printf("DEBUT INIT\r\n");
+
+FILE* fichier;
+fichier = fopen("Data/list_groups.txt","r");
+char* buffer_group;
+buffer_group = malloc(sizeof(char)* BUF_SIZE);
+if(fichier!=NULL){
+   char c;
+   compteurGroupes = 0;
+
+   int compteurMembres;
+   
+   // crée le groupe
+   c = fgetc(fichier);
+   while(c!=EOF){
+
+
+      groupe* g = malloc(sizeof(groupe));
+      // retour à 0 au retour à la ligne
+      strcpy(buffer_group,"");
+      compteurMembres = 0;
+      while(c!='\n'){
+         //c = fgetc(fichier);
+         printf("%c",c);
+         if(c==':'){
+            // nom du groupe
+            strcpy(g->nom, buffer_group);
+            compteurGroupes++;
+            strcpy(buffer_group,"");
+            c = fgetc(fichier);
+         }
+         if(c==';'){
+            // nom de l'utilisateur a ajouter au groupe
+            g->membres[compteurMembres] = malloc(sizeof(buffer_group));
+            strcpy(g->membres[compteurMembres],buffer_group);
+            compteurMembres++;
+            strcpy(buffer_group,"");
+         }
+         else{
+            //printf("\n|BUFFER CAT AVANT : %s |\n",buffer_group);
+            strncat(buffer_group, &c, 1);
+            //  buffer_group[strlen(buffer_group)] = c;
+            //printf("\n|BUFFER CAT APRES : %s |\n",buffer_group);
+         }
+         c = fgetc(fichier);
+      }
+      //passe le retour a la ligne normalement
+      c = fgetc(fichier);
+      g->nombreDeMembres = compteurMembres;
+      //ajoute le groupe à la liste de groupes
+      LISTE_DE_GROUPES[compteurGroupes-1] = g;
+      
+
+   }
+
+   afficherGroupes();
+}
+
 }
 
 int main(int argc, char **argv)
