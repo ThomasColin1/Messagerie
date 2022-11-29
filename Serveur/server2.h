@@ -28,7 +28,7 @@ typedef struct in_addr IN_ADDR;
 #endif
 
 #define CRLF        "\r\n"
-#define PORT         2026
+#define PORT         2003
 #define MAX_CLIENTS     100
 
 #define BUF_SIZE    1024
@@ -59,5 +59,6 @@ static bool estMembre(char* membre, groupe* grp);
 static char* groupesDeMembre(char* membre);
 static groupe* chercheGroupeParNom(char* nomGroupe);
 static void send_message_to_clients_in_group(char* buffer, Client* clients, int actuel, Client client);
+static void loadGroups();
 
 #endif /* guard */
