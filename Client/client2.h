@@ -28,7 +28,7 @@ typedef struct in_addr IN_ADDR;
 #endif
 
 #define CRLF     "\r\n"
-#define PORT     2026
+#define PORT     2029
 
 #define BUF_SIZE 1024
 
@@ -39,5 +39,6 @@ static int init_connection(const char *address);
 static void end_connection(int sock);
 static int read_server(SOCKET sock, char *buffer);
 static void write_server(SOCKET sock, const char *buffer);
+static void affichageHome(const char *name);
 
 #endif /* guard */

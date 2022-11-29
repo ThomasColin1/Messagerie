@@ -5,7 +5,6 @@
 
 #include "client2.h"
 
-int home = 1;
 
 static void init(void)
 {
@@ -162,19 +161,20 @@ static void write_server(SOCKET sock, const char *buffer)
    }
 }
 
-void affichageHome(const char * name){
+static void affichageHome(const char * name){
    printf("-------------------------------------------------------\r\n");
    printf("Accueil de %s\r\n", name);
    printf("\r\n");
    printf("Voici la liste des commandes autorisés \r\n");
    printf("(list)  pour voir la liste des groupes/amis\r\n");
+   printf("(create)  pour créer un groupe ou créer une discussion avec un ami\r\n");
    printf("(home)  pour revenir à l'accueil de la messagerie\r\n");
    printf("(quit)  pour quitter la messagerie\r\n");
    // printf("(create)  pour voir créer un groupe/ajouter un ami\r\n");
    // autre commnande possible pour le client
    printf("-------------------------------------------------------\r\n");
    printf("\r\n");
-   home = 1;
+   return;
 }
 
 int main(int argc, char **argv)
