@@ -188,11 +188,13 @@ static void app(void)
                /* client disconnected */
                if(strcmp(buffer, "quit") == 0)
                {
+                  printf("%s disconnected\r\n", client.name);
                   closesocket(clients[i].sock);
                   remove_client(clients, i, &actual);
                   strncpy(buffer, client.name, BUF_SIZE - 1);
                   strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
-                  send_message_to_all_clients(clients, client, actual, buffer, 1);
+                  // pas besoin de préciser à tout les clients que (pseudo) c'est deconnecté
+                  //send_message_to_all_clients(clients, client, actual, buffer, 1);
                }
                else
                {
@@ -202,13 +204,28 @@ static void app(void)
 
                   }else if(strcmp(buffer,"create")==0){
                      
+                  }else if(strcmp(buffer,"home")==0){
+                     strcpy(client.discussionActuelle, "");
                   }
-                  
-                  
                   else{
+                     // J'écris dans l'historique
+                     FILE* fichierDiscussion;
+                     char * pathDiscussion = "";
+                     strcat(pathDiscussion, "/Data/Discussion/");
+                     strcat(pathDiscussion, client.discussionActuelle);
+                     strcat(pathDiscussion, ".txt");
+                     fichierDiscussion = fopen(pathDiscussion,"a+");
+                     char* buffer_discussion;
+                     buffer_discussion = malloc(sizeof(char)* BUF_SIZE);
+                     //strcat
+
+
+                     // J'écris chez les autres si ils sont sur cette discussion
                      
-                  send_message_to_all_clients(clients, client, actual, buffer, 0);
-                  printf("Message de %s à tt le monde\n", client.name);
+
+                     // je n'envoie plus a tout le monde comme un débilos 
+                     // send_message_to_all_clients(clients, client, actual, buffer, 0);
+                     printf("Message recu de |%s| à destination de |%s|\n", client.name, client.discussionActuelle);
                   }
                
                }
@@ -347,21 +364,32 @@ static char* groupesDeMembre(char* membre){
    int j;
    char* c = malloc(sizeof(char*)*BUF_SIZE);
    strcpy(c,"");
+   strcat(c,"----------------------------------\r\n\r\n");
    for(i=0;i<compteurGroupes;i++){
       if(estMembre(membre, LISTE_DE_GROUPES[i])){
-         strcat(c,"Groupe : ");
-         strcat(c,LISTE_DE_GROUPES[i]->nom);
-         strcat(c,"\r\nMembres : ");
-
-         for(j=0; j<LISTE_DE_GROUPES[i]->nombreDeMembres; j++){
-            strcat(c," |");
-            strcat(c,LISTE_DE_GROUPES[i]->membres[j]);
-            strcat(c,"| ");
+         if(LISTE_DE_GROUPES[i]->nombreDeMembres==2){
+            strcat(c,"Discussion amicale : ");
+            strcat(c,LISTE_DE_GROUPES[i]->nom);
+            strcat(c,"\r\nMembres : ");
          }
-
+         else{
+            strcat(c,"Groupe : ");
+            strcat(c,LISTE_DE_GROUPES[i]->nom);
+            strcat(c,"\r\nMembres : ");
+         }
+         for(j=0; j<LISTE_DE_GROUPES[i]->nombreDeMembres; j++){
+            
+            if(strcmp(LISTE_DE_GROUPES[i]->membres[j],membre)!=0){
+               strcat(c," |");
+               strcat(c,LISTE_DE_GROUPES[i]->membres[j]);
+               strcat(c,"| ");
+            }
+         }
          strcat(c,"\r\n\r\n");
       }
    }
+   strcat(c,"----------------------------------\r\n");
+   strcat(c, "Ecrivez le groupe ou ami avec qui vous voulez communiquer\r\n");
    return c;
 }
 

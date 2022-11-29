@@ -53,10 +53,6 @@ static void app(const char *address, const char *name)
          perror("select()");
          exit(errno);
       }
-
-      if(home == 0){
-         affichageHome(name);
-      }
       /* something from standard input : i.e keyboard */
       if(FD_ISSET(STDIN_FILENO, &rdfs))
       {
@@ -76,8 +72,11 @@ static void app(const char *address, const char *name)
          }
          
          if(strcmp(buffer, "home")==0){
-            home=0;
-            printf("HOME\r\n");
+            write_server(sock, buffer);
+            affichageHome(name);
+         }
+         else if(strcmp(buffer, "list")==0){
+            write_server(sock, buffer);
          }
          else{
             write_server(sock, buffer);
@@ -170,6 +169,7 @@ void affichageHome(const char * name){
    printf("Voici la liste des commandes autorisés \r\n");
    printf("(list)  pour voir la liste des groupes/amis\r\n");
    printf("(home)  pour revenir à l'accueil de la messagerie\r\n");
+   printf("(quit)  pour quitter la messagerie\r\n");
    // printf("(create)  pour voir créer un groupe/ajouter un ami\r\n");
    // autre commnande possible pour le client
    printf("-------------------------------------------------------\r\n");
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 {
    if(argc < 2)
    {
-      printf("Usage : %s [address] [pseudo]\n", argv[0]);
+      printf("Usage : %s [address](127.0.0.1) [pseudo](corentin)\n", argv[0]);
       return EXIT_FAILURE;
    }
 
