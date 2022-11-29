@@ -169,9 +169,11 @@ static void app(void)
 
          Client c = { csock };
          strncpy(c.name, buffer, BUF_SIZE - 1);
+         c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
          clients[actual] = c;
          actual++;
          printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+         
       }
       else
       {
@@ -183,8 +185,10 @@ static void app(void)
             {
                Client client = clients[i];
                int c = read_client(clients[i].sock, buffer);
-               printf("c:%i\r\n", c);
-               printf("bufferSUPER:%s\r\n", buffer);
+               //printf("c:%i\r\n", c);
+               //printf("bufferSUPER:%s\r\n", buffer);
+
+
                /* client disconnected */
                if(strcmp(buffer, "quit") == 0)
                {
@@ -196,46 +200,72 @@ static void app(void)
                   // pas besoin de préciser à tout les clients que (pseudo) c'est deconnecté
                   //send_message_to_all_clients(clients, client, actual, buffer, 1);
                }
-               else
+               // Etape du choix de groupe
+               // On mets "|choix-de-groupe|" dans discussionActuelle pour signifier que le client est en train de choisir le groupe de discussion
+               else if(strcmp(client.discussionActuelle,"|choix-de-groupe|")==0 && strcmp(buffer,"home")!=0){
+                  if(chercheGroupeParNom(buffer)!=NULL){
+                     strncpy(client.discussionActuelle,buffer, BUF_SIZE-1);
+
+                     char* message = malloc(sizeof(char)*BUF_SIZE);
+                     strncpy(message,"Groupe choisi : ",BUF_SIZE);
+                     strcat(message,client.discussionActuelle);
+                     strcat(message,".\r\n");
+
+                     write_client(client.sock, message);
+                     free(message);
+                  }else{
+                     write_client(client.sock, "Groupe non existant, veuillez entrer à nouveau le groupe choisi\r\n");
+                  }
+               }
+               else 
                {
                   if(strcmp(buffer,"list")==0){
-
                      write_client(client.sock, groupesDeMembre(client.name));
-
+                     strncpy(client.discussionActuelle,"|choix-de-groupe|", BUF_SIZE-1);
                   }else if(strcmp(buffer,"create")==0){
                      
                   }else if(strcmp(buffer,"home")==0){
                      strcpy(client.discussionActuelle, "");
                   }
                   else{
+                     printf("debut écriture historique\r\n");
                      // J'écris dans l'historique
                      FILE* fichierDiscussion;
-                     char * pathDiscussion = "";
+                     char * pathDiscussion;
+                     pathDiscussion = malloc(sizeof(char)* BUF_SIZE);
                      strcat(pathDiscussion, "Data/Discussion/");
                      strcat(pathDiscussion, client.discussionActuelle);
                      strcat(pathDiscussion, ".txt");
+                     printf("pathDiscussion|%s|\r\n", pathDiscussion);
                      fichierDiscussion = fopen(pathDiscussion,"a+");
                      char* buffer_discussion;
                      buffer_discussion = malloc(sizeof(char)* BUF_SIZE);
                      // Pourquoi pas essayer d'avoir date+l'horaire du message TODO
+                     //fgets(buffer_discussion, BUF_SIZE, fichierDiscussion);
                      strcat(buffer_discussion, client.name);
                      strcat(buffer_discussion, " : ");
                      strcat(buffer_discussion, buffer);
                      strcat(buffer_discussion, "\r\n");
+                     printf("buffer_discussion|%s|\r\n", buffer_discussion);
                      fputs(buffer_discussion, fichierDiscussion);
-                     strcat
-
-
+                     printf("fin écriture historique\r\n");
+                     fclose(fichierDiscussion);
                      // J'écris chez les autres si ils sont sur cette discussion
 
 
                      // je n'envoie plus a tout le monde comme un débilos 
                      // send_message_to_all_clients(clients, client, actual, buffer, 0);
                      printf("Message recu de |%s| à destination de |%s|\n", client.name, client.discussionActuelle);
+
+                     send_message_to_clients_in_group(buffer, clients, actual, client);
+                     
+
                   }
                
                }
                break;
+
+
             }
          }
       }
@@ -408,6 +438,35 @@ static bool estMembre(char* membre, groupe* grp){
       }
    }
    return false;
+}
+
+static groupe* chercheGroupeParNom(char* nomGroupe){
+   int i;
+   for(i=0; i<compteurGroupes; i++){
+      if(strcmp(LISTE_DE_GROUPES[i]->nom,nomGroupe)==0){
+         return LISTE_DE_GROUPES[i];
+      }
+   }
+   return NULL;
+}
+
+static void send_message_to_clients_in_group(char* buffer, Client* clients, int actuel, Client client){
+   int i;
+   
+   char* message = malloc(sizeof(char)*BUF_SIZE);
+
+   strncpy(message, client.name, BUF_SIZE - 1);
+   strncat(message, " : ", BUF_SIZE - 1);
+   strncat(message, buffer, BUF_SIZE - 1);
+
+
+   for(i=0; i<actuel; i++){
+      if(strcmp(client.discussionActuelle,"")!=0 && (clients[i].name, client.name)!=0 && strcmp(clients[i].discussionActuelle, client.discussionActuelle)==0){
+         write_client(clients[i].sock, message);
+      }
+   }
+
+   free(message);
 }
 
 int main(int argc, char **argv)
