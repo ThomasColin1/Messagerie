@@ -5,7 +5,7 @@
 
 #include "client2.h"
 
-int home = 0;
+int home = 1;
 
 static void init(void)
 {
@@ -37,7 +37,7 @@ static void app(const char *address, const char *name)
 
    /* send our name */
    write_server(sock, name);
-
+   affichageHome(name);
    while(1)
    {
       FD_ZERO(&rdfs);
@@ -55,17 +55,7 @@ static void app(const char *address, const char *name)
       }
 
       if(home == 0){
-         printf("-------------------------------------------------------\r\n");
-         printf("Accueil de %s\r\n", name);
-         printf("\r\n");
-         printf("Voici la liste des commandes autorisés \r\n");
-         printf("(list)  pour voir la liste des groupes/amis\r\n");
-         printf("(home)  pour revenir à l'accueil de la messagerie\r\n");
-         // printf("(create)  pour voir créer un groupe/ajouter un ami\r\n");
-         // autre commnande possible pour le client
-         printf("-------------------------------------------------------\r\n");
-         printf("\r\n");
-         home = 1;
+         affichageHome(name);
       }
       /* something from standard input : i.e keyboard */
       if(FD_ISSET(STDIN_FILENO, &rdfs))
@@ -136,7 +126,6 @@ static int init_connection(const char *address)
       perror("connect()");
       exit(errno);
    }
-
    return sock;
 }
 
@@ -169,6 +158,20 @@ static void write_server(SOCKET sock, const char *buffer)
       perror("send()");
       exit(errno);
    }
+}
+
+void affichageHome(const char * name){
+   printf("-------------------------------------------------------\r\n");
+   printf("Accueil de %s\r\n", name);
+   printf("\r\n");
+   printf("Voici la liste des commandes autorisés \r\n");
+   printf("(list)  pour voir la liste des groupes/amis\r\n");
+   printf("(home)  pour revenir à l'accueil de la messagerie\r\n");
+   // printf("(create)  pour voir créer un groupe/ajouter un ami\r\n");
+   // autre commnande possible pour le client
+   printf("-------------------------------------------------------\r\n");
+   printf("\r\n");
+   home = 1;
 }
 
 int main(int argc, char **argv)
