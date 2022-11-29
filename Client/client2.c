@@ -5,6 +5,8 @@
 
 #include "client2.h"
 
+int home = 0;
+
 static void init(void)
 {
 #ifdef WIN32
@@ -52,8 +54,19 @@ static void app(const char *address, const char *name)
          exit(errno);
       }
 
-      
-
+      if(home == 0){
+         printf("-------------------------------------------------------\r\n");
+         printf("Accueil de %s\r\n", name);
+         printf("\r\n");
+         printf("Voici la liste des commandes autorisés \r\n");
+         printf("(list)  pour voir la liste des groupes/amis\r\n");
+         printf("(home)  pour revenir à l'accueil de la messagerie\r\n");
+         // printf("(create)  pour voir créer un groupe/ajouter un ami\r\n");
+         // autre commnande possible pour le client
+         printf("-------------------------------------------------------\r\n");
+         printf("\r\n");
+         home = 1;
+      }
       /* something from standard input : i.e keyboard */
       if(FD_ISSET(STDIN_FILENO, &rdfs))
       {
@@ -72,7 +85,12 @@ static void app(const char *address, const char *name)
             }
          }
          
-         write_server(sock, buffer);
+         if(strcmp(buffer, "home")){
+            home=0;
+         }
+         else{
+            write_server(sock, buffer);
+         }
       }
       else if(FD_ISSET(sock, &rdfs))
       {

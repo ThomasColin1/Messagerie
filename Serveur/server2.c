@@ -147,7 +147,8 @@ static void app(void)
          /* new client */
          SOCKADDR_IN csin = { 0 };
          size_t sinsize = sizeof csin;
-         int csock = accept(sock, (SOCKADDR *)&csin, &sinsize);
+         // concaténsation en (socklen_t *) : éviter le warning à compilation
+         int csock = accept(sock, (SOCKADDR *)&csin, (socklen_t *) &sinsize);
          if(csock == SOCKET_ERROR)
          {
             perror("accept()");
