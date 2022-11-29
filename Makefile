@@ -1,4 +1,4 @@
-make : Client/client Serveur/server
+make : change_port Client/client Serveur/server
 
 Client/client : Client/client2.c Client/client2.h
 	gcc -g Client/client2.c -o Client/client
@@ -14,3 +14,6 @@ exec_server :
 
 exec_server_valgrind :
 	valgrind Serveur/server
+
+change_port : 
+	python changePort.py

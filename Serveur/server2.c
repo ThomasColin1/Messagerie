@@ -177,28 +177,57 @@ static void app(void)
                   }
                }else if(strcmp(client.discussionActuelle,"|creation-de-groupe|")==0 && strcmp(buffer,"home")!=0){
                      strcpy(client.discussionActuelle,"|choix-membres|");
-                     FILE* fichierGroupes;
-                     fichierGroupes = fopen("Data/list_groups.txt","a+");
-                     fseek(fichierGroupes, SEEK_END, 1);
-                     fputs(buffer, fichierGroupes);
-                     fputs(":", fichierGroupes);
-                     fclose(fichierGroupes);
+                     
+                     groupe * g = malloc(sizeof(groupe));
+                     LISTE_DE_GROUPES[compteurGroupes]=g;
+                     compteurGroupes++;
+                     strcpy(g->nom,buffer);
+                     g->nombreDeMembres=1;
+                     g->membres[0] = malloc(sizeof(char)*BUF_SIZE);
+                     strcpy(g->membres[0], client.name);
+
+                     write_client(client.sock, "\nVeuillez choisir le nom des participants au groupe en appuyant sur entrée pour valider chacun d'entre eux (pour valider, entrez 'finish'): \r\n");
+                  
 
                }else if(strcmp(client.discussionActuelle,"|choix-membres|")==0 && strcmp(buffer,"home")!=0){
 
                      if(strcmp(buffer,"finish")!=0){
-                        FILE* fichierGroupes;
-                        fichierGroupes = fopen("Data/list_groups.txt","a+");
-                        fputs(buffer, fichierGroupes);
-                        fputs(";", fichierGroupes);
-                        fclose(fichierGroupes);
+                        groupe * g = LISTE_DE_GROUPES[compteurGroupes-1];
+                        g->membres[g->nombreDeMembres] = malloc(sizeof(char)*BUF_SIZE);
+                        strcpy(g->membres[g->nombreDeMembres],buffer);
+                        g->nombreDeMembres++;
+
                      }else{
+                        
+                        write_client(client.sock, "\nGroupe créé ! Retour sur la page d'accueil.\r\n");
+
+                        if(LISTE_DE_GROUPES[compteurGroupes-1]->nombreDeMembres==2){
+                           char* val = malloc(sizeof(char)*BUF_SIZE);
+                           strcpy(val, client.name);
+                           strcat(val, "-");
+                           strcat(val, LISTE_DE_GROUPES[compteurGroupes-1]->membres[1]);
+                           strcpy(LISTE_DE_GROUPES[compteurGroupes-1]->nom, val);
+                        }
+
+                        groupe * g = LISTE_DE_GROUPES[compteurGroupes-1];
+
                         FILE* fichierGroupes;
                         fichierGroupes = fopen("Data/list_groups.txt","a+");
+                        fseek(fichierGroupes, SEEK_END, 1);
+                        fputs(g->nom, fichierGroupes);
+                        fputs(":", fichierGroupes);
+
+                        int j;
+                        for(j=0; j<g->nombreDeMembres; j++){
+                           
+                           fputs(g->membres[j], fichierGroupes);
+                           fputs(";", fichierGroupes);
+                        }
+
                         fputs("\n", fichierGroupes);
                         fclose(fichierGroupes);
                         strcpy(client.discussionActuelle,"");
-                        loadGroups();
+
                      }
                      // printf("debut écriture groupe\r\n");
                      // FILE* fichierGroupes;
@@ -215,6 +244,7 @@ static void app(void)
                      write_client(client.sock, groupesDeMembre(client.name));
                      strncpy(client.discussionActuelle,"|choix-de-groupe|", BUF_SIZE-1);
                   }else if(strcmp(buffer,"create")==0){
+                     write_client(client.sock, "\nVeuillez choisir le nom de votre groupe (ceci n'aura pas d'effet si le groupe ne comporte qu'une personne) : \r\n");
                      strncpy(client.discussionActuelle, "|creation-de-groupe|", BUF_SIZE-1);
                   }else if(strcmp(buffer,"home")==0){
                      strcpy(client.discussionActuelle, "");
