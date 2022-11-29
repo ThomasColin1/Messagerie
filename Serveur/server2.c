@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "server2.h"
@@ -8,13 +9,9 @@
 
 
 
-typedef struct groupe{
-   char nom[BUF_SIZE];
-   char* membres[100];
-   int nombreDeMembres;
-}groupe;
 
 groupe* LISTE_DE_GROUPES[100];
+int compteurGroupes;
 
 static void init(void)
 {
@@ -28,7 +25,7 @@ buffer_group = malloc(sizeof(char)* BUF_SIZE);
 if(fichier!=NULL){
    printf("Fichier trouvé\r\n");
    char c;
-   int compteurGroupes = 0;
+   compteurGroupes = 0;
 
    int compteurMembres;
    
@@ -200,7 +197,9 @@ static void app(void)
                else
                {
                   if(strcmp(buffer,"list")==0){
-                     
+
+                     write_client(client.sock, groupesDeMembre(client.name));
+
                   }else if(strcmp(buffer,"create")==0){
                      
                   }
@@ -333,14 +332,47 @@ static void write_client(SOCKET sock, const char *buffer)
 
 static void afficherGroupes(){
    int i;
-   for(i=0;i<8;i++){
-      printf("Groupe : %s\r\n", LISTE_DE_GROUPES[i]->nom);
+   for(i=0;i<compteurGroupes;i++){
+      printf("Groupe : %s\r\nMembres : ", LISTE_DE_GROUPES[i]->nom);
       int j;
       for(j=0; j<LISTE_DE_GROUPES[i]->nombreDeMembres; j++){
-         printf("|%s|", LISTE_DE_GROUPES[i]->membres[j]);
+         printf(" |%s| ", LISTE_DE_GROUPES[i]->membres[j]);
       }
-      printf("\n");
+      printf("\r\n\r\n");
    }
+}
+
+static char* groupesDeMembre(char* membre){
+   int i;
+   int j;
+   char* c = malloc(sizeof(char*)*BUF_SIZE);
+   strcpy(c,"");
+   for(i=0;i<compteurGroupes;i++){
+      if(estMembre(membre, LISTE_DE_GROUPES[i])){
+         strcat(c,"Groupe : ");
+         strcat(c,LISTE_DE_GROUPES[i]->nom);
+         strcat(c,"\r\nMembres : ");
+
+         for(j=0; j<LISTE_DE_GROUPES[i]->nombreDeMembres; j++){
+            strcat(c," |");
+            strcat(c,LISTE_DE_GROUPES[i]->membres[j]);
+            strcat(c,"| ");
+         }
+
+         strcat(c,"\r\n\r\n");
+      }
+   }
+   return c;
+}
+
+static bool estMembre(char* membre, groupe* grp){
+   int j;
+   for(j=0; j<grp->nombreDeMembres; j++){
+      if(strcmp(membre,grp->membres[j])==0){
+         return true;
+      }
+   }
+   return false;
 }
 
 int main(int argc, char **argv)

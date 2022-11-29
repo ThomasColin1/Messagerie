@@ -152,6 +152,8 @@ static int read_server(SOCKET sock, char *buffer)
 
 static void write_server(SOCKET sock, const char *buffer)
 {  
+   //printf("strlen:|%li|\r\n",  strlen(buffer));
+
    //strcat(buffer, '\0');
    if(send(sock, buffer, strlen(buffer), 0) < 0)
    {
