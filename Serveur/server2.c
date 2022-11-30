@@ -106,8 +106,8 @@ static void app(void)
          char* name_mdp = malloc(sizeof(char)*BUF_SIZE);
          strncpy(name_mdp, buffer, BUF_SIZE - 1);
 
-         connectClient(name_mdp, c, clients, actual);
-         
+
+         connectClient(name_mdp, c, clients, &actual);
          
       }
       else
@@ -591,7 +591,8 @@ if(fichier!=NULL){
 }
 }
 
-static void connectClient(char* name_mdp, Client c, Client* clients, int actual){
+static void connectClient(char* name_mdp, Client c, Client* clients, int* pntactual){
+   int actual = *pntactual;
    int j;
    char* name = malloc(sizeof(char)*BUF_SIZE);
    strcpy(name,"");
@@ -614,8 +615,6 @@ static void connectClient(char* name_mdp, Client c, Client* clients, int actual)
       mdp[k]=name_mdp[j];
       mdp[k+1]='\0';
    }
-
-   printf("NAME : |%s|, MDP : |%s|\r\n",name,mdp);
 
    FILE* fichierlogin;
    char* buffer_login;
@@ -650,7 +649,6 @@ static void connectClient(char* name_mdp, Client c, Client* clients, int actual)
                nomlogin[j]=buffer_login_temp[j];
                nomlogin[j+1]='\0';
             }
-            printf("login déduit : |%s|\r\n",nomlogin);
             if(strcmp(nomlogin,name)==0){
                mauvaisMDP=1;
                break;
@@ -667,6 +665,8 @@ static void connectClient(char* name_mdp, Client c, Client* clients, int actual)
 
       if(mauvaisMDP==1){
 
+         printf("Client nom %s mauvais mdp\n",name);
+         write_client(c.sock,"Mauvais login/mot de passe\r\n");
          closesocket(c.sock);
       }else if(connect==1){
 
@@ -675,19 +675,22 @@ static void connectClient(char* name_mdp, Client c, Client* clients, int actual)
          clients[actual] = c;
          actual++;
          printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+         *pntactual=actual;
       }else{
-         fichierGroupes = fopen("Data/login_mdp.txt","a+");
-         fputs(name_mdp, fichierGroupes);
-         fputs("\n", fichierGroupes);
+
+         fichierlogin = fopen("Data/login_mdp.txt","a+");
+         fputs(name_mdp, fichierlogin);
+         fputs("\n", fichierlogin);
+         fclose(fichierlogin);
          
          strncpy(c.name, name, BUF_SIZE - 1);
          c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
          clients[actual] = c;
          actual++;
-         printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+         printf("Client n°%d nom %s cree\n", actual-1, clients[actual-1].name);
+         *pntactual=actual;
       }
    }
-   printf("TOUT LE FICHIER : |%s|\r\n",buffer_login);
 
 
 
@@ -705,9 +708,6 @@ static void connectClient(char* name_mdp, Client c, Client* clients, int actual)
 
 int main(int argc, char **argv)
 {
-   Client c;
-   Client* clients;
-   connectClient("mael:test", c, clients, 20);
 
    init();
 

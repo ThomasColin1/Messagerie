@@ -1,3 +1,6 @@
-mael:test
-colin:hello
-coco:kklsfg
+corentin:1234
+colin:1234
+mael:1234
+eva:1234
+simon:1234
+alexis:1234

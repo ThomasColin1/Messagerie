@@ -28,13 +28,13 @@ typedef struct in_addr IN_ADDR;
 #endif
 
 #define CRLF     "\r\n"
-#define PORT 2008
+#define PORT 2007
 
 #define BUF_SIZE 1024
 
 static void init(void);
 static void end(void);
-static void app(const char *address, const char *name);
+static void app(const char *address, const char *name, const char *mdp);
 static int init_connection(const char *address);
 static void end_connection(int sock);
 static int read_server(SOCKET sock, char *buffer);

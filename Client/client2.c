@@ -27,15 +27,20 @@ static void end(void)
 #endif
 }
 
-static void app(const char *address, const char *name)
+static void app(const char *address, const char *name, const char *mdp)
 {
    SOCKET sock = init_connection(address);
    char buffer[BUF_SIZE];
 
    fd_set rdfs;
 
-   /* send our name */
-   write_server(sock, name);
+   /* send our name & mdp*/
+   char * info_serv = malloc(sizeof(char)*BUF_SIZE);
+   strcpy(info_serv, "");
+   strcat(info_serv, name);
+   strcat(info_serv, ":");
+   strcat(info_serv, mdp);
+   write_server(sock, info_serv);
    affichageHome(name);
    while(1)
    {
@@ -184,15 +189,15 @@ static void affichageHome(const char * name){
 
 int main(int argc, char **argv)
 {
-   if(argc < 2)
+   if(argc < 3)
    {
-      printf("Usage : %s [address](127.0.0.1) [pseudo](corentin)\n", argv[0]);
+      printf("Usage : %s [address](127.0.0.1) [pseudo](corentin) [mdp](1234)\n", argv[0]);
       return EXIT_FAILURE;
    }
 
    init();
 
-   app(argv[1], argv[2]);
+   app(argv[1], argv[2], argv[3]);
 
    end();
 
