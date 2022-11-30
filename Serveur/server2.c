@@ -102,11 +102,12 @@ static void app(void)
          FD_SET(csock, &rdfs);
 
          Client c = { csock };
-         strncpy(c.name, buffer, BUF_SIZE - 1);
-         c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
-         clients[actual] = c;
-         actual++;
-         printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+
+         char* name_mdp = malloc(sizeof(char)*BUF_SIZE);
+         strncpy(name_mdp, buffer, BUF_SIZE - 1);
+
+         connectClient(name_mdp, c, clients, actual);
+         
          
       }
       else
@@ -588,11 +589,126 @@ if(fichier!=NULL){
 
    afficherGroupes();
 }
-
 }
+
+static void connectClient(char* name_mdp, Client c, Client* clients, int actual){
+   int j;
+   char* name = malloc(sizeof(char)*BUF_SIZE);
+   strcpy(name,"");
+   char* mdp = malloc(sizeof(char)*BUF_SIZE);
+   strcpy(mdp,"");
+   char* charSepar = ":";
+   for(j=0; j<strlen(name_mdp); j++){
+      if(name_mdp[j]==':'){
+         break;
+      }
+      //strcat(name, name_mdp[j]);
+      name[j]=name_mdp[j];
+      name[j+1]='\0';
+   }
+   int k=-1;
+   while(j<strlen(name_mdp)){
+      j++;
+      k++;
+      //strcat(mdp, name_mdp[j]);
+      mdp[k]=name_mdp[j];
+      mdp[k+1]='\0';
+   }
+
+   printf("NAME : |%s|, MDP : |%s|\r\n",name,mdp);
+
+   FILE* fichierlogin;
+   char* buffer_login;
+   buffer_login = malloc(sizeof(char)* BUF_SIZE);
+   char* buffer_login_temp;
+   buffer_login_temp = malloc(sizeof(char)* BUF_SIZE);
+   // si fichier existe
+   if(fichierlogin = fopen("Data/login_mdp.txt","r")){
+      fgets(buffer_login_temp, BUF_SIZE, fichierlogin);
+      int mauvaisMDP=0;
+      int connect=0;
+      while(!(feof(fichierlogin))){
+         if(strlen(buffer_login_temp)!=0)
+            buffer_login_temp[strlen(buffer_login_temp)-1]='\0';
+         if(strcmp(buffer_login_temp, name_mdp)==0){
+            //CONNECT
+
+            connect=1;
+            break;
+            // strncpy(c.name, name, BUF_SIZE - 1);
+            // c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
+            // clients[actual] = c;
+            // actual++;
+            // printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+         }else{
+            char* nomlogin = malloc(sizeof(char)*BUF_SIZE);
+            strcpy(nomlogin, "");
+            for(j=0; j<strlen(buffer_login_temp); j++){
+               if(buffer_login_temp[j]==':'){
+                  break;
+               }
+               nomlogin[j]=buffer_login_temp[j];
+               nomlogin[j+1]='\0';
+            }
+            printf("login déduit : |%s|\r\n",nomlogin);
+            if(strcmp(nomlogin,name)==0){
+               mauvaisMDP=1;
+               break;
+            }
+         }
+
+
+         strcat(buffer_login, buffer_login_temp);
+         fgets(buffer_login_temp, BUF_SIZE, fichierlogin);
+      }
+      fgets(buffer_login, BUF_SIZE, fichierlogin);
+      fclose(fichierlogin);
+
+
+      if(mauvaisMDP==1){
+
+         closesocket(c.sock);
+      }else if(connect==1){
+
+         strncpy(c.name, name, BUF_SIZE - 1);
+         c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
+         clients[actual] = c;
+         actual++;
+         printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+      }else{
+         fichierGroupes = fopen("Data/login_mdp.txt","a+");
+         fputs(name_mdp, fichierGroupes);
+         fputs("\n", fichierGroupes);
+         
+         strncpy(c.name, name, BUF_SIZE - 1);
+         c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
+         clients[actual] = c;
+         actual++;
+         printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+      }
+   }
+   printf("TOUT LE FICHIER : |%s|\r\n",buffer_login);
+
+
+
+
+
+
+   // strncpy(c.name, buffer, BUF_SIZE - 1);
+   // c.discussionActuelle = malloc(sizeof(char)*BUF_SIZE);
+   // clients[actual] = c;
+   // actual++;
+   // printf("Client n°%d nom %s connecte\n", actual-1, clients[actual-1].name);
+}
+
+
 
 int main(int argc, char **argv)
 {
+   Client c;
+   Client* clients;
+   connectClient("mael:test", c, clients, 20);
+
    init();
 
    app();
