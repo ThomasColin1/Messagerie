@@ -9,3 +9,6 @@ colin : coucou mon pote
 corentin : csgds
 corentin : salut
 [Wed Nov 30 09:11:45 2022] corentin : coucou
+[Wed Nov 30 09:16:38 2022] mael : salut je suis mael
+[Wed Nov 30 09:16:56 2022] mael : retest
+[Wed Nov 30 09:19:53 2022] corentin : bonjour
