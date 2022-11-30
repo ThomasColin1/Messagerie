@@ -199,7 +199,8 @@ static void app(void)
 
                      }else{
                         
-                        write_client(client.sock, "\nGroupe créé ! Retour sur la page d'accueil.\r\n");
+                        //write_client(client.sock, "\nGroupe créé ! Retour sur la page d'accueil.\r\n");
+                        write_client(client.sock, "home");
 
                         if(LISTE_DE_GROUPES[compteurGroupes-1]->nombreDeMembres==2){
                            char* val = malloc(sizeof(char)*BUF_SIZE);

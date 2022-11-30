@@ -90,6 +90,11 @@ static void app(const char *address, const char *name)
             printf("Server disconnected !\n");
             break;
          }
+
+         if(strcmp(buffer,"home")==0){
+            strcpy(buffer,"");
+            affichageHome(name);
+         }
          puts(buffer);
       }
    }
@@ -134,7 +139,8 @@ static void end_connection(int sock)
 }
 
 static int read_server(SOCKET sock, char *buffer)
-{
+{  
+
    int n = 0;
 
    if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
@@ -144,7 +150,6 @@ static int read_server(SOCKET sock, char *buffer)
    }
 
    buffer[n] = 0;
-
    return n;
 }
 
