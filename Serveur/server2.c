@@ -485,6 +485,7 @@ static void send_message_to_clients_in_group(char* buffer, Client* clients, int 
    int i;
    
    char* message = malloc(sizeof(char)*BUF_SIZE);
+   strcpy(message, "");
    strncat(message,"[", BUF_SIZE - 1);
    strncat(message, getHoraire(), BUF_SIZE - 1);
    strncat(message,"] ", BUF_SIZE - 1);
@@ -494,7 +495,7 @@ static void send_message_to_clients_in_group(char* buffer, Client* clients, int 
 
 
    for(i=0; i<actuel; i++){
-      if(strcmp(client.discussionActuelle,"")!=0 && (clients[i].name, client.name)!=0 && strcmp(clients[i].discussionActuelle, client.discussionActuelle)==0){
+      if(strcmp(client.discussionActuelle,"")!=0 && strcmp(clients[i].name, client.name)!=0 && strcmp(clients[i].discussionActuelle, client.discussionActuelle)==0){
          write_client(clients[i].sock, message);
       }
    }
