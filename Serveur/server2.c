@@ -158,7 +158,9 @@ static void app(void)
                      strcat(pathHistorique, ".txt");
                      char* buffer_historique;
                      buffer_historique = malloc(sizeof(char)* BUF_SIZE);
-                     strcat(buffer_historique, "****** DEBUT HISTORIQUE ******\r\n");
+                     strcat(buffer_historique, "****** DEBUT HISTORIQUE ");
+                     strcat(buffer_historique, client.discussionActuelle);
+                     strcat(buffer_historique, " ******\r\n");
                      // si fichier existe
                      if(fichierHistorique = fopen(pathHistorique,"r")){
                         char* buffer_historique_temp;
@@ -175,7 +177,9 @@ static void app(void)
                      else{
 
                      }
-                     strcat(buffer_historique, "******* FIN HISTORIQUE *******\r\n");
+                     strcat(buffer_historique, "******* FIN HISTORIQUE ");
+                     strcat(buffer_historique, client.discussionActuelle);
+                     strcat(buffer_historique, " *******\r\n");
                      write_client(client.sock, buffer_historique);
                      free(message);
                   }else{
