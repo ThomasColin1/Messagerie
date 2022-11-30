@@ -1,6 +1,0 @@
-corentin : Hourra j'ai validé ma 5IF
-colin : Bravo !
-[Wed Nov 30 09:09:22 2022
-] corentin : salut colin
-[Wed Nov 30 09:09:48 2022
-] corentin : retest

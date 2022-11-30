@@ -35,13 +35,13 @@ static void app(const char *address, const char *name, const char *mdp)
    fd_set rdfs;
 
    /* send our name & mdp*/
-   char * info_serv = malloc(sizeof(char)*BUF_SIZE);;
-   info_serv = "";
+   char * info_serv = malloc(sizeof(char)*BUF_SIZE);
+   strcpy(info_serv, "");
    strcat(info_serv, name);
    strcat(info_serv, ":");
    strcat(info_serv, mdp);
-   write_server(sock, name);
-   affichageHome(info_serv);
+   write_server(sock, info_serv);
+   affichageHome(name);
    while(1)
    {
       FD_ZERO(&rdfs);

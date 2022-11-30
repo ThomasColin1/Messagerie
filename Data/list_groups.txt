@@ -1,12 +1,10 @@
 3IF:alexis;simon;corentin;colin;mael;
 4IF:simon;eva;corentin;colin;mael;
+5IF:corentin;colin;mael;
 alexis-corentin:alexis;corentin;
 simon-corentin:simon;corentin;
 eva-corentin:eva;corentin;
 alexis-colin:alexis;colin;
 simon-colin:simon;colin;
 eva-colin:eva;colin;
-colin-k:colin;k;
-k:colin;k;k;
-colin-j:colin;j;
-5IF:corentin;colin;mael;
+corentin-colin:corentin;colin;
