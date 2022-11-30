@@ -532,7 +532,7 @@ static char * getHoraire(){
 }
 
 static void loadGroups(){
-   printf("DEBUT INIT\r\n");
+   printf("Start initialisation\r\n");
 
 FILE* fichier;
 fichier = fopen("Data/list_groups.txt","r");
@@ -555,7 +555,7 @@ if(fichier!=NULL){
       compteurMembres = 0;
       while(c!='\n'){
          //c = fgetc(fichier);
-         printf("%c",c);
+         //printf("%c",c);
          if(c==':'){
             // nom du groupe
             strcpy(g->nom, buffer_group);
@@ -587,8 +587,9 @@ if(fichier!=NULL){
 
    }
 
-   afficherGroupes();
+   //afficherGroupes();
 }
+   printf("End initialisation\r\n");
 }
 
 static void connectClient(char* name_mdp, Client c, Client* clients, int* pntactual){
