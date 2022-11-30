@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
-
+#include <time.h>
 #include "server2.h"
 #include "client2.h"
 
@@ -156,21 +156,27 @@ static void app(void)
                      strcat(pathHistorique, "Data/Discussion/");
                      strcat(pathHistorique, client.discussionActuelle);
                      strcat(pathHistorique, ".txt");
-                     fichierHistorique = fopen(pathHistorique,"r");
                      char* buffer_historique;
                      buffer_historique = malloc(sizeof(char)* BUF_SIZE);
-                     char* buffer_historique_temp;
-                     buffer_historique_temp = malloc(sizeof(char)* BUF_SIZE);
-                     fgets(buffer_historique_temp, BUF_SIZE, fichierHistorique);
-                     while(!(feof(fichierHistorique))){
-                        strcat(buffer_historique, buffer_historique_temp);
+                     strcat(buffer_historique, "****** DEBUT HISTORIQUE ******\r\n");
+                     // si fichier existe
+                     if(fichierHistorique = fopen(pathHistorique,"r")){
+                        char* buffer_historique_temp;
+                        buffer_historique_temp = malloc(sizeof(char)* BUF_SIZE);
                         fgets(buffer_historique_temp, BUF_SIZE, fichierHistorique);
+                        while(!(feof(fichierHistorique))){
+                           strcat(buffer_historique, buffer_historique_temp);
+                           fgets(buffer_historique_temp, BUF_SIZE, fichierHistorique);
+                        }
+                        fgets(buffer_historique, BUF_SIZE, fichierHistorique);
+                        fclose(fichierHistorique);
                      }
-                     fgets(buffer_historique, BUF_SIZE, fichierHistorique);
-                     fclose(fichierHistorique);
-                     write_client(client.sock, buffer_historique);
+                     // sinon si fichier n'existe pas
+                     else{
 
-                     
+                     }
+                     strcat(buffer_historique, "******* FIN HISTORIQUE *******\r\n");
+                     write_client(client.sock, buffer_historique);
                      free(message);
                   }else{
                      write_client(client.sock, "Groupe non existant, veuillez entrer à nouveau le groupe choisi\r\n");
@@ -263,6 +269,9 @@ static void app(void)
                      buffer_discussion = malloc(sizeof(char)* BUF_SIZE);
                      // Pourquoi pas essayer d'avoir date+l'horaire du message TODO
                      //fgets(buffer_discussion, BUF_SIZE, fichierDiscussion);
+                     strcat(buffer_discussion, "[");
+                     strcat(buffer_discussion, getHoraire());
+                     strcat(buffer_discussion, "] ");
                      strcat(buffer_discussion, client.name);
                      strcat(buffer_discussion, " : ");
                      strcat(buffer_discussion, buffer);
@@ -275,11 +284,13 @@ static void app(void)
 
                      // je n'envoie plus a tout le monde comme un débilos 
                      // send_message_to_all_clients(clients, client, actual, buffer, 0);
-                     printf("Message recu de |%s| à destination de |%s|\n", client.name, client.discussionActuelle);
-                     
-                     send_message_to_clients_in_group(buffer, clients, actual, client);
-                     
-
+                     if(strcmp(client.discussionActuelle,"")!=0){
+                        printf("Message recu de |%s| à destination de |%s|\n", client.name, client.discussionActuelle);
+                        send_message_to_clients_in_group(buffer, clients, actual, client);
+                     }
+                     else{
+                        write_client(client.sock, "home");
+                     }
                   }
                
                }
@@ -474,8 +485,10 @@ static void send_message_to_clients_in_group(char* buffer, Client* clients, int 
    int i;
    
    char* message = malloc(sizeof(char)*BUF_SIZE);
-
-   strncpy(message, client.name, BUF_SIZE - 1);
+   strncat(message,"[", BUF_SIZE - 1);
+   strncat(message, getHoraire(), BUF_SIZE - 1);
+   strncat(message,"] ", BUF_SIZE - 1);
+   strncat(message, client.name, BUF_SIZE - 1);
    strncat(message, " : ", BUF_SIZE - 1);
    strncat(message, buffer, BUF_SIZE - 1);
 
@@ -489,6 +502,32 @@ static void send_message_to_clients_in_group(char* buffer, Client* clients, int 
    free(message);
 }
 
+static char * getHoraire(){
+   struct sockaddr_in serv_addr_time;
+   bzero((char *) &serv_addr_time, sizeof(serv_addr_time));
+   serv_addr_time.sin_family           = AF_INET;
+   serv_addr_time.sin_addr.s_addr      = inet_addr(IP_TIME);
+   serv_addr_time.sin_port             = htons(atoi(PORT_TIME));
+
+   int sockfd_time;
+   if((sockfd_time = socket(AF_INET, SOCK_STREAM, 0))<0){
+      printf("Erreur lecture horaire"); 
+      return "";
+   }
+   if(connect(sockfd_time, (struct sockaddr*)&serv_addr_time, sizeof(serv_addr_time))<0){
+      printf("Erreur lecture horaire"); 
+      return "";
+   }
+
+   long int lng;
+   read(sockfd_time, &lng, 8);
+   long int lng2 = ntohl(lng);
+   time_t timestamp = time (&lng2);
+   close(sockfd_time);
+   char * tempsString = ctime(&timestamp);
+   tempsString[strlen(tempsString)-1] ='\0';
+   return tempsString;
+}
 
 static void loadGroups(){
    printf("DEBUT INIT\r\n");

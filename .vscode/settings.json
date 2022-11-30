@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "client2.h": "c"
+        "*.pl": "prolog",
+        "client2.h": "c",
+        "time.h": "c"
     }
 }
